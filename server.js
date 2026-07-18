@@ -255,12 +255,31 @@ const DEFAULT_CORS_ORIGINS = [
     'http://localhost:3002'
 ];
 
-const CORS_ORIGIN = process.env.CORS_ORIGIN 
+// أنماط Vercel/النطاقات الأساسية التي يجب السماح بها دائماً (حتى عند ضبط CORS_ORIGIN)
+const ALWAYS_ALLOWED_ORIGINS = [
+    'https://zoomdz.com',
+    'https://www.zoomdz.com',
+    'https://chatvidio.vercel.app',
+    'https://chatvidio-git-*.vercel.app',
+    'https://chatvidio-*.vercel.app',
+    'https://*.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002'
+];
+
+// دمج القيم القادمة من البيئة مع الأنماط الأساسية بدلاً من استبدالها بالكامل
+const ENV_CORS_ORIGINS = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN
         .split(',')
         .map(origin => origin.trim())
         .filter(origin => origin.length > 0)
-    : DEFAULT_CORS_ORIGINS;
+    : [];
+
+const CORS_ORIGIN = Array.from(new Set([
+    ...ENV_CORS_ORIGINS,
+    ...(ENV_CORS_ORIGINS.length ? ALWAYS_ALLOWED_ORIGINS : DEFAULT_CORS_ORIGINS)
+]));
 
 logger.info('CORS Origins configured:', {
     count: CORS_ORIGIN.length,
