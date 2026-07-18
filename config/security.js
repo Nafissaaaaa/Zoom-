@@ -7,10 +7,13 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN
     : [
         'https://zoomdz.com',
         'https://www.zoomdz.com',
+        'https://chatvidio.onrender.com',
+        'https://zoom-3fsx.onrender.com',
         'https://chatvidio.vercel.app',
         'https://chatvidio-git-*.vercel.app',
         'https://chatvidio-*.vercel.app',
         'https://*.vercel.app',
+        'https://*.onrender.com',
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:3002'
@@ -27,9 +30,14 @@ const LOCKOUT_TIME = 15 * 60 * 1000;
 function isOriginAllowed(origin) {
     if (!origin) return true;
     if (CORS_ORIGIN.includes(origin)) return true;
+    
+    // التحقق من النماذج بدلاً من الآثار
     for (const allowed of CORS_ORIGIN) {
         if (allowed.includes('*')) {
-            const pattern = allowed.replace(/\*/g, '.*');
+            // هروب النقاط من الـ regex ثم تحويل asterisks إلى .*
+            const pattern = allowed
+                .replace(/\./g, '\\.')
+                .replace(/\*/g, '.*');
             const regex = new RegExp(`^${pattern}$`);
             if (regex.test(origin)) return true;
         }

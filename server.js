@@ -293,7 +293,7 @@ function isOriginAllowed(origin) {
         return true;
     }
 
-    // التحقق المباشر
+    // التحقق المباشر (دقيق)
     if (CORS_ORIGIN.includes(origin)) {
         return true;
     }
@@ -301,6 +301,7 @@ function isOriginAllowed(origin) {
     // التحقق من Wildcard patterns
     for (const allowed of CORS_ORIGIN) {
         if (allowed.includes('*')) {
+            // هروب النقاط والآثار ثم تحويل asterisks إلى .*
             const pattern = allowed
                 .replace(/\./g, '\\.')
                 .replace(/\*/g, '.*');
