@@ -6,6 +6,20 @@ const { supabase } = require('../config/database');
 const crypto = require('crypto');
 const logger = require('./logger');
 
+// ============================================================
+// إعدادات الكوكيز (متوافقة مع الطلبات عبر النطاقات)
+// ============================================================
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+function getCookieOptions(extra = {}) {
+    return {
+        httpOnly: true,
+        secure: IS_PRODUCTION,
+        sameSite: IS_PRODUCTION ? 'none' : 'lax',
+        ...extra
+    };
+}
+
 function sanitizeInput(input) {
     if (typeof input === 'string') {
         return input.trim();
@@ -151,5 +165,6 @@ module.exports = {
     getOne,
     insert,
     update,
-    remove
+    remove,
+    getCookieOptions
 };

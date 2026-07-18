@@ -13,7 +13,7 @@ const path = require('path');
 const { supabase } = require('../config/database');
 const { authenticate, authorize, checkBanned } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimit');
-const { getOne, insert, update, generateVerificationToken, generateReferralCode, sanitizeObject } = require('../utils/helpers');
+const { getOne, insert, update, generateVerificationToken, generateReferralCode, sanitizeObject, getCookieOptions } = require('../utils/helpers');
 const { encrypt, maskIP } = require('../utils/encryption');
 const { sendVerificationEmail, sendResetEmail, sendTeacherApprovalEmail, sendTeacherRejectionEmail } = require('../utils/email');
 const { processReferralOnRegister } = require('../utils/referral');
@@ -629,6 +629,10 @@ router.post('/login', checkBanned, authLimiter, [
         const token = generateToken(user.id, userRole, email);
         const redirectPath = userRole === 'teacher' ? '/teacher-dashboard.html' : '/student-dashboard.html';
         
+        // ✅ إنشاء وإرسال CSRF token
+        const csrfToken = crypto.randomBytes(32).toString('hex');
+        res.cookie('csrf_token', csrfToken, getCookieOptions({ maxAge: 3600000 }));
+        
         // ✅ بيانات المستخدم المرجعة
         const userData = {
             id: user.id,
@@ -654,6 +658,7 @@ router.post('/login', checkBanned, authLimiter, [
         res.json({
             success: true,
             token: token,
+            csrfToken: csrfToken,
             redirectTo: redirectPath,
             user: userData
         });

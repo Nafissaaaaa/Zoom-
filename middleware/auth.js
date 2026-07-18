@@ -32,8 +32,7 @@ async function authenticate(req, res, next) {
     if (!decoded) {
         logger.warn('توكن غير صالح أو منتهي الصلاحية', {
             ip: req.ip,
-            url: req.originalUrl,
-            userId: decoded?.userId
+            url: req.originalUrl
         });
         return res.status(401).json({ 
             success: false, 
