@@ -322,6 +322,22 @@ function isOriginAllowed(origin) {
 }
 
 // ============================================================
+// إعدادات الكوكيز (متوافقة مع الطلبات عبر النطاقات / cross-site)
+// ============================================================
+// في الإنتاج نحتاج SameSite=None مع Secure حتى تُرسل الكوكيز مع الطلبات
+// القادمة من نطاقات معاينة Vercel (cross-site) بدل حجبها بواسطة Strict.
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+function getCookieOptions(extra = {}) {
+    return {
+        httpOnly: true,
+        secure: IS_PRODUCTION,
+        sameSite: IS_PRODUCTION ? 'none' : 'lax',
+        ...extra
+    };
+}
+
+// ============================================================
 // تهيئة التطبيق
 // ============================================================
 
@@ -616,23 +632,13 @@ app.use('/api', apiLimiter);
 
 app.get('/api/csrf-token', (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
-    res.cookie('csrf_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 3600000
-    });
+    res.cookie('csrf_token', token, getCookieOptions({ maxAge: 3600000 }));
     res.json({ csrfToken: token });
 });
 
 app.get('/api/get-csrf-token', authenticate, (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
-    res.cookie('csrf_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 3600000
-    });
+    res.cookie('csrf_token', token, getCookieOptions({ maxAge: 3600000 }));
     res.json({ csrfToken: token });
 });
 
@@ -966,12 +972,9 @@ app.use('/api/notifications', notificationRoutes);
 app.get('/', (req, res) => {
     const refCode = req.query.ref;
     if (refCode) {
-        res.cookie('referral_code', refCode, { 
-            maxAge: 7 * 24 * 60 * 60 * 1000, 
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
-        });
+        res.cookie('referral_code', refCode, getCookieOptions({
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        }));
     }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
